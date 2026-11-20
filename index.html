@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>StaffHub</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#eef7f5;color:#263c39}
+header{background:#187c70;color:white;padding:25px}
+main{max-width:850px;margin:auto;padding:20px}
+.card{background:white;padding:22px;border-radius:15px;margin:20px 0}
+input,select,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:8px}
+button{background:#187c70;color:white;border:0;cursor:pointer}
+.item{padding:15px;border-bottom:1px solid #eee}
+.actions{display:flex;gap:8px}
+.actions button{width:auto}
+</style>
+</head>
+<body>
+<header><h1>👨‍💼 StaffHub</h1><p>Employee information management.</p></header>
+<main>
+<div class="card">
+<h2>Add Employee</h2>
+<input id="name" placeholder="Employee name">
+<input id="position" placeholder="Job position">
+<select id="department"><option>IT</option><option>HR</option><option>Finance</option><option>Marketing</option><option>Operations</option></select>
+<input id="email" type="email" placeholder="Email address">
+<button onclick="add()">Add Employee</button>
+</div>
+<div class="card">
+<h2>Employee Records</h2>
+<input id="search" placeholder="Search employees..." oninput="render()">
+<div id="list"></div>
+</div>
+</main>
+<script>
+let data=JSON.parse(localStorage.getItem('staff')||'[]');
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){localStorage.setItem('staff',JSON.stringify(data));render()}
+function add(){
+let n=$('name').value.trim(),p=$('position').value.trim(),d=$('department').value,e=$('email').value.trim();
+if(!n||!p||!e)return alert('Complete all fields.');
+data.unshift({id:Date.now(),n,p,d,e});
+$('name').value='';$('position').value='';$('email').value='';save();
+}
+function edit(id){
+let x=data.find(a=>a.id===id),v=prompt('Employee name:',x.n);
+if(v&&v.trim()){x.n=v.trim();save()}
+}
+function del(id){if(confirm('Delete employee?')){data=data.filter(x=>x.id!==id);save()}}
+function render(){
+let q=$('search').value.toLowerCase();
+$('list').innerHTML=data.filter(x=>(x.n+x.p+x.d+x.e).toLowerCase().includes(q)).map(x=>`
+<div class="item"><h3>👤 ${esc(x.n)}</h3>
+<p>Position: ${esc(x.p)}</p><p>Department: ${esc(x.d)}</p><p>Email: ${esc(x.e)}</p>
+<div class="actions"><button onclick="edit(${x.id})">Edit</button><button onclick="del(${x.id})">Delete</button></div></div>`).join('')||'No employees found.'}
+render();
+</script>
+</body>
+</html>
